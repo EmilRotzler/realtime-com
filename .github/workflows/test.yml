@@ -9,10 +9,10 @@ on:
 permissions:
   contents: read
 
-# Cancel superseded runs on the same branch / PR
+# Cancel superseded PR runs; every push to main runs to completion
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   DOTNET_VERSION: 10.0.x
