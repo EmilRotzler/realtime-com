@@ -1,0 +1,28 @@
+# Runs the .NET backend and Vue frontend. Values come from .env (see .env.example).
+#   docker compose up --build
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ASPNETCORE_HTTP_PORTS: ${BACKEND_CONTAINER_PORT}
+    ports:
+      - "${BACKEND_HOST_PORT}:${BACKEND_CONTAINER_PORT}"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    environment:
+      NGINX_PORT: ${FRONTEND_CONTAINER_PORT}
+    ports:
+      - "${FRONTEND_HOST_PORT}:${FRONTEND_CONTAINER_PORT}"
+    depends_on:
+      - backend
+    restart: unless-stopped

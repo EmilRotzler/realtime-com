@@ -1,0 +1,108 @@
+# AGENTS CONTEXT
+AGENTS.md
+CLAUDE.md
+
+# SUPERPOWERS (generated specs/plans)
+docs/superpowers/
+
+# DOCKER (root Dockerfile / compose setup for front + back)
+# Compose env file usually holds secrets; commit a .env.example instead
+/.env
+# Per-developer compose overrides
+docker-compose.override.yml
+docker-compose.override.yaml
+compose.override.yml
+compose.override.yaml
+# Local bind-mounted volume data (DB files, uploads, etc.)
+/.docker-data/
+
+# VUE FRONTEND (front/, Vite + create-vue defaults)
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies and build output
+node_modules
+dist
+dist-ssr
+coverage
+*.local
+*.tsbuildinfo
+.eslintcache
+
+# Environment files (keep committed .env / .env.example; ignore local overrides)
+.env.local
+.env.*.local
+
+# Test artifacts
+**/cypress/videos/
+**/cypress/screenshots/
+test-results/
+playwright-report/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sw?
+
+# .NET BACKEND (back/, based on dotnet new gitignore / VisualStudio template)
+# Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]64/
+[Ll]og/
+[Ll]ogs/
+artifacts/
+publish/
+*.[Pp]ublish.xml
+*.pubxml.user
+
+# Visual Studio / Rider / user-specific files
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+*.sln.iml
+_ReSharper*/
+*.DotSettings.user
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+
+# Tests and coverage
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.trx
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+coverage*.info
+
+# Local settings/secrets (commit appsettings.json; keep machine-specific overrides out)
+appsettings.*.local.json
+*.db
+*.db-shm
+*.db-wal

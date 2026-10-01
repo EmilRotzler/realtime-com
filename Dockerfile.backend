@@ -1,0 +1,22 @@
+# syntax=docker/dockerfile:1
+# .NET backend (back/). Build context is the repo root.
+
+ARG DOTNET_VERSION=10.0
+
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} AS build
+# Path to the startup project, relative to the repo root
+ARG BACKEND_PROJECT=back/Api/Api.csproj
+WORKDIR /src
+
+COPY back/ back/
+RUN dotnet restore "$BACKEND_PROJECT"
+RUN dotnet publish "$BACKEND_PROJECT" -c Release -o /app/publish --no-restore /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION} AS final
+# Assembly name of the startup project (usually the .csproj name)
+ARG BACKEND_DLL=Api.dll
+ENV BACKEND_DLL=${BACKEND_DLL}
+WORKDIR /app
+COPY --from=build /app/publish .
+USER $APP_UID
+ENTRYPOINT ["sh", "-c", "exec dotnet \"$BACKEND_DLL\""]
