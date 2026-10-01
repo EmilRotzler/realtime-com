@@ -101,8 +101,9 @@ coverage*.json
 coverage*.xml
 coverage*.info
 
-# Local settings/secrets (commit appsettings.json; keep machine-specific overrides out)
-appsettings.*.local.json
+# Local settings/secrets (commit appsettings.example.json; copy it to appsettings.json)
+appsettings*.json
+!appsettings.example.json
 *.db
 *.db-shm
 *.db-wal
