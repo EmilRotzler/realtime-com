@@ -1,5 +1,6 @@
 import process from 'node:process'
 import { defineConfig, devices } from '@playwright/test'
+import { BACKEND_URL, FRONTEND_PORT, FRONTEND_URL } from './e2e/urls'
 
 /**
  * Read environment variables from file.
@@ -34,7 +35,7 @@ export default defineConfig({
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 0,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: process.env.CI ? 'http://localhost:4173' : 'http://localhost:5173',
+    baseURL: FRONTEND_URL,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -51,18 +52,19 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
       },
     },
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-      },
-    },
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-      },
-    },
+    /* Enable more browsers when cross-browser coverage is needed. */
+    // {
+    //   name: 'firefox',
+    //   use: {
+    //     ...devices['Desktop Firefox'],
+    //   },
+    // },
+    // {
+    //   name: 'webkit',
+    //   use: {
+    //     ...devices['Desktop Safari'],
+    //   },
+    // },
 
     /* Test against mobile viewports. */
     // {
@@ -96,15 +98,33 @@ export default defineConfig({
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   // outputDir: 'test-results/',
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    /**
-     * Use the dev server by default for faster feedback loop.
-     * Use the preview server on CI for more realistic testing.
-     * Playwright will re-use the local server if there is already a dev-server running.
-     */
-    command: process.env.CI ? 'npm run preview' : 'npm run dev',
-    port: process.env.CI ? 4173 : 5173,
-    reuseExistingServer: !process.env.CI,
-  },
+  /* Start the real backend and the frontend before the tests */
+  webServer: [
+    {
+      // appsettings.json is gitignored, so pass everything the backend needs via env
+      command: 'dotnet run --project ../back/Api --no-launch-profile',
+      url: `${BACKEND_URL}/health`,
+      env: {
+        ASPNETCORE_URLS: BACKEND_URL,
+        ASPNETCORE_ENVIRONMENT: 'Development',
+        Cors__Origins__0: FRONTEND_URL,
+      },
+      reuseExistingServer: !process.env.CI,
+      // First run includes a dotnet build
+      timeout: 120 * 1000,
+    },
+    {
+      /**
+       * Use the dev server by default for faster feedback loop.
+       * Use the preview server on CI for more realistic testing.
+       * VITE_API_URL is read at build time, so on CI build with it set before running preview.
+       */
+      command: process.env.CI ? 'npm run preview' : 'npm run dev',
+      port: FRONTEND_PORT,
+      env: {
+        VITE_API_URL: BACKEND_URL,
+      },
+      reuseExistingServer: !process.env.CI,
+    },
+  ],
 })

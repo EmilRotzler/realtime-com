@@ -1,0 +1,83 @@
+# Runs backend (xUnit) and frontend e2e (Playwright) tests.
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same branch / PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: 10.0.x
+  NODE_VERSION: 24
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  backend:
+    name: Backend (xUnit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Test
+        run: dotnet test --solution back/realtime-com.slnx
+
+  e2e:
+    name: Frontend e2e (Playwright)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: front
+    steps:
+      - uses: actions/checkout@v7
+
+      # Playwright starts the backend with `dotnet run`
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      # On CI Playwright serves the built app with `npm run preview`, so build first.
+      # VITE_API_URL is baked in at build time and must match BACKEND_URL in e2e/urls.ts.
+      - name: Build frontend
+        run: npm run build
+        env:
+          VITE_API_URL: http://localhost:5222
+
+      # Keeps `dotnet run` startup well inside Playwright's webServer timeout
+      - name: Build backend
+        run: dotnet build ../back/Api
+
+      - name: Run e2e tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: front/playwright-report/
+          retention-days: 14
