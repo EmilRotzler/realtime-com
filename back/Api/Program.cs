@@ -3,6 +3,7 @@ using Api.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSignalR();
+builder.Services.AddHealthChecks();
 
 // SignalR sends credentials, so origins must be listed explicitly (no AllowAnyOrigin)
 var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? [];
@@ -18,5 +19,6 @@ var app = builder.Build();
 app.UseCors();
 
 app.MapHub<ChatHub>("/hub");
+app.MapHealthChecks("/health");
 
 app.Run();
