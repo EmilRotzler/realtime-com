@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test'
 import { BACKEND_URL } from './urls'
 
-test('visits the app root url', async ({ page }) => {
+test('shows the app title and name prompt', async ({ page }) => {
   await page.goto('/')
-  await expect(page.locator('h1')).toHaveText('You did it!')
+  await expect(page.locator('h1')).toHaveText('Realtime Chat')
+  await expect(page.getByLabel('Choose a display name')).toBeVisible()
 })
 
 test('backend is healthy', async ({ request }) => {
